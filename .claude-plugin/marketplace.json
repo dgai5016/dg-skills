@@ -1,0 +1,21 @@
+{
+  "name": "dg-skills",
+  "owner": {
+    "name": "dgai5016"
+  },
+  "metadata": {
+    "description": "Personal collection of reusable Claude Code skills",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "dg-skills",
+      "description": "Generic, reusable skills for daily workflows",
+      "source": "./",
+      "strict": false,
+      "skills": [
+        "./skills/dg-translate-tech-docs"
+      ]
+    }
+  ]
+}
