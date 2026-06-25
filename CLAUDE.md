@@ -24,9 +24,7 @@ dg-skills/
 - 否 → 通用 skill，放本仓库
 - 是 → 专属 skill，放目标仓库 `.claude/skills/`
 
-**复用既有工具**：不重新造轮子。例如翻译类 skill 直接调用已安装的 `baoyu-translate`，不重复实现翻译引擎。
-
-**框架白名单制**：保证流程可预期。遇到不支持的框架直接报错退出，要求用户先去 `references/` 加适配器再重新跑——**不要**让 Claude 现场处理新框架。
+**复用既有工具**：不重新造轮子。如果某功能已有成熟工具（CLI、npm 包、其他 skill 等），优先调用而非重新实现。
 
 ## Skill 编写规范
 
@@ -73,7 +71,6 @@ dg-skills/
   - **删除 skill** → marketplace major bump
   - 多个 skill 同时改动时，按最高级别为准（例如一个 patch + 一个 minor → marketplace minor bump）
   - 除了 marketplace.json，还要同步更新 CLAUDE.md 的「现有 skills」表格里的版本列
-- 框架适配器（如 `framework-mkdocs.md`）改动后，检查 SKILL.md 的 Supported Frameworks 表格是否仍准确
 - 不要为了"清理"而删除 `references/` 下被 SKILL.md 引用的文件——先全局搜引用
 
 ## 本地开发安装
@@ -108,4 +105,4 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 **调试 skill**：
 - **通用原则**：任何带 `scripts/` 的 skill，先用 `bash scripts/<script>.sh <args>` 独立验证脚本工作正常，再让 Claude 调用整个 skill
-- **dg-git-push**：用 `collect-status.sh <path>` 在目标仓库验证状态采集——BRANCH / STATUS / DIFFSTAT / COMMIT-CONTEXT 四段是否完整、untracked 是否被列出、无 remote / 无 upstream 等边界是否正确标记 `(none)`
+- **dg-git-push**：用 `collect-status.sh <path>` 在目标仓库验证状态采集——BRANCH（含 ahead/behind）/ STATUS / DIFFSTAT / COMMIT-CONTEXT 四段是否完整、untracked 是否被列出、无 remote / 无 upstream 等边界是否正确标记 `(none)` / `(n/a)`
