@@ -52,8 +52,7 @@ dg-skills/
 - 单次命令调用（直接让 Claude 跑即可）
 - 需要灵活判断、临场决策的逻辑（让 Claude 处理更合适）
 
-当前仓库的两个示例：
-- `dg-translate-tech-docs/scripts/detect-framework.sh`——一次性判定框架类型
+当前仓库的示例：
 - `dg-git-push/scripts/collect-status.sh`——一次性收集 git 状态
 
 ## 新增 skill 的检查清单
@@ -94,22 +93,19 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 | Skill | 版本 | 职责 |
 |-------|------|------|
-| `dg-translate-tech-docs` | 1.0.2 | GitHub 英文技术文档 → 中文，保留原框架（MkDocs Material / VitePress）。产物是可运行的中文化原项目 |
 | `dg-git-push` | 1.2.0 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
 
 ## 通用 vs 专属的判断示例
 
 | Skill | 位置 | 理由 |
 |-------|------|------|
-| `dg-translate-tech-docs` | 本仓库（通用） | 纯翻译 md + nav，产物可放回原项目 |
+| `dg-git-push` | 本仓库（通用） | 任何 git 仓库都能用，不依赖特定目录结构 |
+| `dg-translate-tech-docs` | 目标仓库 `.claude/skills/`（专属） | 产物格式 `.source-version.json` 专为下游 `dg-import-docs` 设计——曾放在本仓库，已于 2026-06 迁至 `dg-docs-cn` |
 | `dg-import-docs` | 目标仓库 `.claude/skills/`（专属） | 绑定特定仓库的目录结构与 `.project.json` schema |
 | `dg-translate-and-import` | 目标仓库 `.claude/skills/`（专属） | 编排上述两个 skill，绑定特定工作流 |
 
 ## 常见任务速查
 
-**新增框架适配器**（针对翻译 skill）：在 `skills/dg-translate-tech-docs/references/` 下新增 `framework-{name}.md`，描述：检测信号、文档目录位置、nav/sidebar 配置路径与字段名、不应翻译的配置项。然后同步 SKILL.md 的 Supported Frameworks 表格。
-
 **调试 skill**：
 - **通用原则**：任何带 `scripts/` 的 skill，先用 `bash scripts/<script>.sh <args>` 独立验证脚本工作正常，再让 Claude 调用整个 skill
-- **dg-translate-tech-docs**：用 `detect-framework.sh <path>` 验证框架检测；用 1-2 个 md 小样本跑通术语，再全量
 - **dg-git-push**：用 `collect-status.sh <path>` 在目标仓库验证状态采集——BRANCH / STATUS / DIFFSTAT / COMMIT-CONTEXT 四段是否完整、untracked 是否被列出、无 remote / 无 upstream 等边界是否正确标记 `(none)`

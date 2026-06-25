@@ -6,21 +6,8 @@
 
 - **通用优先**：仅收录可在任何项目里复用的 skill。若 skill 强依赖某个具体仓库的目录结构、CI 配置或部署目标，应该放进那个仓库的 `.claude/skills/`，而不是这里。
 - **可发布**：所有 skill 遵循 [Claude Code skill 编写规范](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)，可作为 marketplace 分享给社区。
-- **复用既有工具**：不重新造轮子。例如翻译类 skill 直接调用已安装的 `baoyu-translate`，不重复实现翻译引擎。
 
 ## Skills
-
-### dg-translate-tech-docs
-
-把 GitHub 上的英文技术文档仓库翻译成中文，保留原站点框架与配置（MkDocs Material / VitePress）。产物是一份可运行的中文化原项目。
-
-```bash
-# 翻译整个文档站
-/dg-translate-tech-docs https://github.com/owner/repo
-
-# 翻译指定文件（增量模式）
-/dg-translate-tech-docs https://github.com/owner/repo --files docs/index.md,docs/api/intro.md
-```
 
 ### dg-git-push
 
