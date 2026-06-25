@@ -1,226 +1,100 @@
-# 报告模板（三种模式）
+# 报告模板（字面模板，禁止偏离）
 
-skill 在执行 git add/commit/push **之前**，必须输出一份报告给用户。报告的字面顺序固定——核心信息（往哪推、推什么）在前，支撑信息（文件、分析）在后。
+skill 在执行 `git add/commit/push` **之前**必须输出一份报告给用户。本文件是**字面模板**，不是参考文档——所有段落标题、空行、bullet 节奏、句数限制必须**逐字复制**，禁止变体、禁止"意思一样"的改写。
 
-## 字面顺序（必须严格遵守）
+## 核心原则：骨架固定、字段值变化
 
-```
-1. 目标分支
-2. Commit Message 预览
-3. 改动文件
-4. 改动分析
-5. 确认提示（仅非 auto 模式）
-```
+**所有场景共用同一份骨架**。不同场景的差异**只通过字段值体现**（如 Upstream 字段的值变化），**不改变段落结构、标题、bullet 数量**。
 
-**严禁**先输出文件清单再输出 commit message。用户在确认时，最关心的是「推到哪 + 推什么 message」，文件和分析是支撑信息。
+这是输出一致性的根本保证——用户看到的报告永远是"同一个形状"，只是字段值不同。
 
-## 占位符说明
-
-| 占位符 | 含义 | 来源 |
-|--------|------|------|
-| `{target_branch}` | 推送目标，如 `origin/feature-login` 或 `origin/main`（首次推送加注「会自动设置上游」） | collect-status.sh 的 BRANCH 段 |
-| `{commit_preview}` | 完整 commit message 预览（含中英两行或自带 message） | 由 skill 生成或用户传入 |
-| `{files_section}` | 改动文件清单（每行：中文标签 + 路径 + 一句话概括） | collect-status.sh 的 STATUS 段 + skill 分析 |
-| `{analysis}` | 改动整体描述（2-3 句） | skill 分析 |
-| `{confirm_prompt}` | 确认提示文字 | 仅非 auto 模式出现 |
-
-## 中文标签（替代 git 字母图标）
-
-报告里改动文件的状态用方括号包裹的**中文标签**表示，不依赖 emoji / ANSI 颜色（跨终端 100% 兼容）：
-
-| 标签 | 含义 | 对应 git porcelain 状态码 |
-|------|------|--------------------------|
-| `[修改]` | 修改（Modified） | ` M` / `M ` / `MM` |
-| `[新增]` | 新增（Added 或 Untracked） | `A ` / `AM` / `??` |
-| `[删除]` | 删除（Deleted） | ` D` / `D ` |
-
-**为什么合并 `A` 和 `??` 为 `[新增]`**：skill 最终会执行 `git add -A`，已 staged 的新文件（`A`）和未跟踪的新文件（`??`）最终都会进入同一次 commit，对用户没区别。合并后认知更简单——三种状态对应三种标签。
-
-## 模式 1：默认交互模式
+## 完整骨架（所有场景共用）
 
 ```
 ## 目标分支
 
-origin/feature-login
+  - 当前分支: ${CURRENT_BRANCH}${BRANCH_NOTE}
+  - Upstream: ${UPSTREAM_STATUS}
+  - Remote: ${REMOTE_STATUS}${WARNINGS_BULLET}
 
 ## Commit Message 预览
 
-feat(auth): add login validation
-
-新增登录校验逻辑
+${COMMIT_MESSAGE}
 
 ## 改动文件
 
-[修改] src/auth/login.ts · 新增 validate 函数，处理空用户场景
-[新增] src/utils/validator.ts · 表单校验工具函数（用户名/密码格式）
-[修改] src/auth/login.test.ts · 补充校验失败的测试用例
+${SENSITIVE_WARNING_IF_ANY}
+- [${TAG}] ${PATH} · ${ONE_LINE_SUMMARY}
+- [${TAG}] ${PATH} · ${ONE_LINE_SUMMARY}
+- [${TAG}] ${PATH} · ${ONE_LINE_SUMMARY}
 
 ## 改动分析
 
-聚焦登录模块的校验逻辑：抽出独立的 validator 工具函数，让 login 流程调用它处理空用户场景，并补充对应测试。整体属于功能增强。
+${ANALYSIS_SENTENCE_1} ${ANALYSIS_SENTENCE_2}
 
 ## 确认
 
-回复 `y` / `yes` / `继续` 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
+回复 y / yes / 继续 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
 ```
 
-## 模式 2：`--auto` 自动模式
+**字面约束（硬性，不允许偏离）**：
+
+- 5 个段落标题字面固定：`## 目标分支` / `## Commit Message 预览` / `## 改动文件` / `## 改动分析` / `## 确认`——禁止写成 `## 推送目标` / `## Commit Message` / `## 改动清单` / `## 分析` 等任何变体
+- 段落标题前后各空 1 行
+- bullet 节奏统一为 `  - `（2 空格 + 短横 + 空格），禁止用 `*` 或 `- `（顶格短横）
+- 改动文件段**必须用列表**，**禁用表格**
+- 改动分析段**必须 2 句**——不能 1 句、不能 3 句
+- 确认提示措辞**逐字复制**上面那行，禁止改写
+
+## 占位符字段值规则
+
+### 目标分支段（4 个 bullet，所有场景都用相同结构）
+
+| 场景 | CURRENT_BRANCH | BRANCH_NOTE | UPSTREAM_STATUS | REMOTE_STATUS | WARNINGS_BULLET（可选，没警告时整行不出现） |
+|------|----------------|-------------|-----------------|---------------|---------------------------------------------|
+| 普通推送 | `feature-login` | （空） | `origin/feature-login` | `origin → git@github.com:owner/repo.git` | （整行不出现） |
+| 首次推送（新分支无 upstream） | `feature-login` | （空） | `未设置 → 首次推送时会自动 git push -u origin HEAD` | `origin → git@...` | （整行不出现） |
+| 首次推送到 main/master | `main` | `（新仓库的默认分支）` | `未设置 → 首次推送时会自动 git push -u origin HEAD` | `origin → git@...` | `\n  - ⚠️ 这是首次提交并推送到 main 分支，请确认无误。` |
+| 推送到 main（非首次） | `main` | （空） | `origin/main` | `origin → git@...` | `\n  - ⚠️ 将直接推送到 main 分支，请确认无误。` |
+| 无 remote（交互模式） | `main` | （空） | `未设置 → 首次推送时会自动 git push -u origin HEAD`（或对应 upstream 实际状态） | `（未配置）` | `\n  - ⚠️ 未配置 remote：输入 remote URL 让我执行 git remote add origin <url> 后继续 push，或回复 跳过 只做本地 commit` |
+| 无 remote + `--auto` 模式 | `main` | （空） | 同上 | `（未配置，--auto 模式下跳过 push，仅做本地 commit）` | （整行不出现） |
+
+**字段拼写约束**：
+- 字段名严格用：`当前分支` / `Upstream` / `Remote`——禁止写成 `分支` / `上游` / `远程` 等同义词
+- 字段名后跟 `: `（冒号 + 1 空格），值紧随其后
+- BRANCH_NOTE 直接括号跟在分支名后，无空格分隔（如 `main（新仓库的默认分支）`），普通场景为空
+- WARNINGS_BULLET 是可选的**第 4 个 bullet**，没警告时**整行不出现**（不要写空 bullet）；有警告时跟在 Remote 后换行
+
+### 改动文件段
+
+强制用 bullet 列表，**禁用 markdown 表格**。每行格式字面固定：
 
 ```
-## 目标分支
-
-origin/feature-login
-
-## Commit Message 预览
-
-feat(auth): add login validation
-
-新增登录校验逻辑
-
-## 改动文件
-
-[修改] src/auth/login.ts · 新增 validate 函数，处理空用户场景
-[新增] src/utils/validator.ts · 表单校验工具函数（用户名/密码格式）
-[修改] src/auth/login.test.ts · 补充校验失败的测试用例
-
-## 改动分析
-
-聚焦登录模块的校验逻辑：抽出独立的 validator 工具函数，让 login 流程调用它处理空用户场景，并补充对应测试。整体属于功能增强。
-
----
-
-[auto 模式] 上述内容已自动执行：git add -A → git commit → git push
+- [${TAG}] ${PATH} · ${ONE_LINE_SUMMARY}
 ```
 
-**注意**：auto 模式下**不**出现"## 确认"段落，**不**询问 yes/no。报告仍然展示（让用户能事后回看），但执行不再等待。报告末尾追加一行说明"已自动执行"。
+**TAG 标签映射**（替代 git 字母图标，跨终端 100% 兼容）：
 
-## 模式 3：用户自带 message
+| git porcelain 状态码 | TAG |
+|----------------------|-----|
+| ` M` / `M ` / `MM` | `[修改]` |
+| `A ` / `AM` / `??` | `[新增]` |
+| ` D` / `D ` | `[删除]` |
 
-```
-## 目标分支
+**为什么合并 `A` 和 `??` 为 `[新增]`**：skill 最后会 `git add -A`，已 staged 的新文件（`A`）和未跟踪的新文件（`??`）最终进同一 commit，对用户没区别。
 
-origin/feature-login
+**分隔符**：路径与一句话概括之间用 ` · `（空格 + 中点 + 空格）。
 
-## Commit Message 预览
-
-修复登录超时
-
-## 改动文件
-
-[修改] src/auth/login.ts · 新增 timeout 处理
-[修改] src/auth/login.test.ts · 补充超时测试
-
-## 改动分析
-
-聚焦登录流程的超时处理，新增 timeout 配置项和对应的失败测试。整体属于 bug 修复。
-
-## 确认
-
-回复 `y` / `yes` / `继续` 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
-```
-
-**注意**：用户自带的 message 原样使用——不强制中英混合、不重新生成、不翻译。预览段直接展示用户给的原文。
-
-## 边界场景的呈现
-
-### 首次推送（无 upstream）
-
-目标分支段标注"会自动设置上游"：
-
-```
-## 目标分支
-
-origin/feature-login（首次推送，会自动 `git push -u origin HEAD` 设置上游）
-```
-
-### 没有 remote（非 auto 模式）
-
-目标分支段提示，并在末尾追加交互询问：
-
-```
-## 目标分支
-
-⚠️ 当前仓库未配置任何 remote。可以：
-
-  1. 输入 remote URL（例如 `git@github.com:owner/repo.git`）让我执行 `git remote add origin <url>` 后继续 push
-  2. 回复 `跳过` 只做本地 commit，不 push
-
-## Commit Message 预览
-...
-```
-
-### 没有 remote + `--auto` 模式
-
-静默降级，不询问，目标分支段说明跳过 push：
-
-```
-## 目标分支
-
-（未配置 remote，--auto 模式下跳过 push，仅做本地 commit）
-```
-
-### 推送到 main / master
-
-正常显示，**不**警告或阻止（用户在 plan 里明确不保护 main），但目标分支段会让分支名显眼：
-
-```
-## 目标分支
-
-origin/main
-```
-
-### 工作区无改动
-
-直接输出一段说明，不进入完整报告：
-
-```
-工作区无改动（git status 干净），已退出，未执行任何 git 操作。
-```
-
-## 敏感文件警告
-
-STATUS 中如果检测到下列模式，在「改动文件」段**最前面**插入显眼警告（不阻止提交，让用户自行判断）：
-
-**触发模式**：
-- `.env` / `.env.*`（如 `.env.local`、`.env.production`）
-- `id_rsa` / `id_rsa.pub`
-- `*.pem` / `*.key`
-- `credentials*` / `secrets.*`
-- 文件名包含 `token` / `password` / `apikey`
-
-**警告格式**（插入在改动文件列表第一行之前）：
-
-```
-## 改动文件
-
-⚠️ 检测到可能含敏感信息的文件，请确认是否真的要提交：
-  - .env.local（环境变量文件，通常不应进版本库）
-  - config/secrets.json（文件名提示可能含密钥）
-
-[修改] src/auth/login.ts · 新增 validate 函数
-[新增] .env.local · 本地环境变量
-[新增] config/secrets.json · 配置文件
-...
-```
-
-用户在确认环节可以选择：
-- 仍然提交（回复 `y`）
-- 退出（自行处理敏感文件后重新调用 skill）
-
-## 改动文件"一句话概括"的写作要求
-
-每个文件后面那句话（如"· 新增 validate 函数"）：
-
-- **20-30 字**以内
+**一句话概括要求**（20-30 字）：
 - 用中文
-- 描述**这个文件的主要改动**，不是逐行翻译 diff
-- 动词开头：「新增」「修改」「移除」「补充」「重构」「提取」
-- 如果是纯格式/类型调整，写「格式调整」「类型修正」
+- 动词开头：「新增」「修改」「移除」「补充」「重构」「提取」「更新」
+- 描述这个文件的**主要改动**，不逐行翻译 diff
+- 纯格式/类型调整写「格式调整」「类型修正」
 
 **反例**（不要这样写）：
 - ❌ "修改了第 23 行的 if 判断"（太细）
 - ❌ "更新文件"（太空）
-- ❌ "changed the validation logic in handleLogin function"（英文，应该中文）
+- ❌ "changed the validation logic in handleLogin"（应中文）
 
 **正例**：
 - ✅ "新增 validate 函数，处理空用户场景"
@@ -228,16 +102,213 @@ STATUS 中如果检测到下列模式，在「改动文件」段**最前面**插
 - ✅ "移除已废弃的 legacyLogin 调用"
 - ✅ "提取密码强度校验到独立函数"
 
-## 改动分析的写作要求
+### 敏感文件警告（可选，插入改动文件段最前面）
 
-「改动分析」段（2-3 句整体描述）：
+STATUS 检测到下列模式时，在改动文件 bullet 列表**上方**插入警告段：
 
-- **聚焦"为什么改"和"整体性质"**，不重复文件清单
-- 第一句：主题（"聚焦 X 模块的 Y 调整"）
-- 第二句：主要手段（"通过抽出 Z 工具/重写 X 流程"）
-- 第三句（可选）：定性（"属于功能增强 / bug 修复 / 重构"）
+**触发模式**：
+- `.env` / `.env.*`（如 `.env.local`、`.env.production`）
+- `id_rsa` / `id_rsa.pub`
+- `*.pem` / `*.key`
+- `credentials*` / `secrets.*`
+- 文件名含 `token` / `password` / `apikey`
 
-**样例**：
+**警告格式**（字面）：
+```
+## 改动文件
+
+⚠️ 检测到可能含敏感信息的文件，请确认是否真的要提交：
+  - .env.local（环境变量文件，通常不应进版本库）
+  - config/secrets.json（文件名提示可能含密钥）
+
+- [修改] src/auth/login.ts · 新增 validate 函数
+- [新增] .env.local · 本地环境变量
+...
+```
+
+警告段空 1 行后再接 bullet 列表。不阻止提交，由用户在确认环节决定。
+
+### Commit Message 预览段
+
+直接**逐字贴入**完整 commit message 原文：
+- Claude 生成的：`<type>(<scope>): <english-subject>` + 空行 + `<中文翻译>`（详见 SKILL.md Step 4）
+- 用户自带的（如 `/dg-git-push 修复登录超时`）：贴原文 `修复登录超时`，**不强制中英混合、不重新翻译、不套 Conventional Commits 模板**
+
+### 改动分析段（必须 2 句）
+
+**结构字面固定**：
+- **第 1 句**：主题 + 主要手段（"聚焦 X 模块的 Y 调整：通过 Z 手段..."）
+- **第 2 句**：定性（"属于功能增强 / bug 修复 / 重构 / 依赖升级 / 文档更新 / 配置调整"）
+
+**禁止**：
+- ❌ 1 句话（缺定性）
+- ❌ 3 句或更多（冗长）
+- ❌ 重复改动文件清单（已经在上面列过了）
+
+**正例**：
 - "聚焦登录模块的校验逻辑：抽出独立的 validator 工具函数，让 login 流程调用它处理空用户场景，并补充对应测试。整体属于功能增强。"
 - "升级 React 到 18.3，同步调整被废弃 API 的调用方式，并更新锁文件。属于依赖升级。"
 - "修复用户在弱网下的重复提交问题：在提交按钮加节流，并在后端补充幂等校验。属于 bug 修复。"
+
+### 确认段（字面固定）
+
+确认提示**逐字复制**：
+```
+## 确认
+
+回复 y / yes / 继续 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
+```
+
+## 末尾处理（按模式）
+
+### 默认交互模式
+
+完整骨架（5 段）输出后，停在确认段等待用户回复。用户回 `y` / `yes` / `继续` / `ok` / `确认` → 继续；其他任何内容 → 直接退出，不进入修改循环。
+
+### `--auto` 模式
+
+**不出现 `## 确认` 段**。报告只输出前 4 段，然后在改动分析段后追加：
+
+```
+## 改动分析
+
+${ANALYSIS_SENTENCE_1} ${ANALYSIS_SENTENCE_2}
+
+---
+
+[auto 模式] 上述内容已自动执行：git add -A → git commit → git push
+```
+
+**严禁**在 auto 模式里加任何 yes/no 二次询问。报告仍然展示（便于事后回看），但执行不再等待。
+
+### 用户自带 message 模式
+
+骨架完全相同，只是 `## Commit Message 预览` 段贴用户给的原文。其他段落不受影响。
+
+## 工作区无改动（独立流程，不进入完整报告）
+
+STATUS 输出 `(clean — no changes)` 时，**不进入完整报告**，直接输出一段说明后退出：
+
+```
+工作区无改动（git status 干净），已退出，未执行任何 git 操作。
+```
+
+这是 SKILL.md Step 3a 的分支，与本模板的 5 段骨架无关。
+
+## 完整示例
+
+### 示例 1：普通推送（feature 分支、有 upstream、Claude 生成 message）
+
+```
+## 目标分支
+
+  - 当前分支: feature-login
+  - Upstream: origin/feature-login
+  - Remote: origin → git@github.com:owner/repo.git
+
+## Commit Message 预览
+
+feat(auth): add login validation
+
+新增登录校验逻辑
+
+## 改动文件
+
+- [修改] src/auth/login.ts · 新增 validate 函数，处理空用户场景
+- [新增] src/utils/validator.ts · 表单校验工具函数（用户名/密码格式）
+- [修改] src/auth/login.test.ts · 补充校验失败的测试用例
+
+## 改动分析
+
+聚焦登录模块的校验逻辑：抽出独立的 validator 工具函数，让 login 流程调用它处理空用户场景，并补充对应测试。整体属于功能增强。
+
+## 确认
+
+回复 y / yes / 继续 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
+```
+
+### 示例 2：首次推送到 main（无 upstream）
+
+```
+## 目标分支
+
+  - 当前分支: main（新仓库的默认分支）
+  - Upstream: 未设置 → 首次推送时会自动 git push -u origin HEAD
+  - Remote: origin → git@github.com:owner/repo.git
+  - ⚠️ 这是首次提交并推送到 main 分支，请确认无误。
+
+## Commit Message 预览
+
+feat: initial commit
+
+初始化项目骨架与基础配置
+
+## 改动文件
+
+- [新增] README.md · 项目说明与安装指引
+- [新增] package.json · 依赖清单与 npm 脚本
+- [新增] src/index.ts · 程序入口
+
+## 改动分析
+
+初始化项目骨架，包含基础的 npm 配置、入口文件与说明文档。属于项目初始化。
+
+## 确认
+
+回复 y / yes / 继续 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
+```
+
+### 示例 3：`--auto` 模式（不出现确认段）
+
+```
+## 目标分支
+
+  - 当前分支: feature-login
+  - Upstream: origin/feature-login
+  - Remote: origin → git@github.com:owner/repo.git
+
+## Commit Message 预览
+
+fix(auth): handle empty password
+
+修复空密码场景的崩溃问题
+
+## 改动文件
+
+- [修改] src/auth/login.ts · 空密码时直接返回错误，不再进入校验流程
+
+## 改动分析
+
+修复空密码请求导致的崩溃：在 login 入口加空值拦截，跳过 validator 调用。属于 bug 修复。
+
+---
+
+[auto 模式] 上述内容已自动执行：git add -A → git commit → git push
+```
+
+### 示例 4：用户自带 message
+
+```
+## 目标分支
+
+  - 当前分支: feature-login
+  - Upstream: origin/feature-login
+  - Remote: origin → git@github.com:owner/repo.git
+
+## Commit Message 预览
+
+修复登录超时
+
+## 改动文件
+
+- [修改] src/auth/login.ts · 新增 timeout 处理
+- [修改] src/auth/login.test.ts · 补充超时测试
+
+## 改动分析
+
+聚焦登录流程的超时处理：新增 timeout 配置项并在请求超时时返回友好错误，同步补充对应测试。属于 bug 修复。
+
+## 确认
+
+回复 y / yes / 继续 确认提交并推送，输入其他任何内容或明确拒绝则退出流程。
+```

@@ -1,7 +1,7 @@
 ---
 name: dg-git-push
 description: Analyzes git changes in the current repository, generates a bilingual (English + Chinese) Conventional Commits message, shows a structured report (target branch + commit message + changed files + analysis), waits for user confirmation, then runs `git add -A` + `git commit` + `git push` in one shot. Use when the user says "/dg-git-push", "提交并推送", "push 一下", "commit and push", "提交代码", or wants to commit and push after finishing a chunk of work. Supports `--auto` (no confirmation), `--style=conventional` (default, future-extensible), and user-provided custom messages. Does NOT add `--no-verify`, does NOT protect main/master (but explicitly shows the target branch in the report), does NOT create PRs/MRs, does NOT amend history.
-version: 1.1.0
+version: 1.2.0
 metadata:
   openclaw:
     homepage: https://github.com/dgai5016/dg-skills#dg-git-push
@@ -191,37 +191,11 @@ bash {baseDir}/scripts/collect-status.sh
 
 ### Step 5: Render Report
 
-**字面顺序必须严格遵守**（加载 [references/report-template.md](references/report-template.md) 看完整模板）：
+**严格按 [references/report-template.md](references/report-template.md) 输出报告，禁止偏离**：
 
-```
-## 目标分支
-<分支信息，含首次推送/无 remote/无 upstream 的特殊提示>
-
-## Commit Message 预览
-<完整 message>
-
-## 改动文件
-[敏感文件警告（若有）]
-[标签]  <路径> · <一句话概括>
-...
-
-## 改动分析
-<2-3 句整体描述>
-
-## 确认（仅交互模式）
-回复 y / yes / 继续 确认，否则退出
-```
-
-**关键约束**：
-- **目标分支在最上面**（核心信息：往哪推）
-- **Commit Message 预览紧跟其后**（核心信息：推什么）
-- **改动文件和分析在后面**（支撑信息）
-- **改动文件用中文标签替代 git 字母图标**（不依赖 emoji / ANSI 颜色）：
-  - `M` → `[修改]`
-  - `A` 或 `??` → `[新增]`（合并：skill 最后会 `git add -A`，两者最终都进入 commit）
-  - `D` → `[删除]`
-- 每个文件一句话概括，20-30 字，中文，动词开头
-- STATUS 中检测到敏感文件模式（`.env*` / `id_rsa` / `*.pem` / `*.key` / `*secret*` / `*token*`）→ 在改动文件段最前面加显眼警告（详见 references/report-template.md 的「敏感文件警告」段）
+- 加载该文件作为**字面模板**（不是参考文档）——所有段落标题、空行、bullet 节奏、句数限制必须**逐字复制**
+- 不同场景的差异通过**字段值**体现（如 Upstream 字段值变化），**不改变段落结构**
+- 工作区无改动时不进入完整报告，按 Step 3a 处理
 
 ### Step 6: Confirm（仅交互模式）
 

@@ -1,7 +1,7 @@
 ---
 name: dg-translate-tech-docs
-description: Translates an English technical documentation repository from GitHub into Chinese while preserving the original site's framework (MkDocs Material or VitePress) and all configuration. Output is drop-in compatible with the source project — can be placed back into the original repo or submitted as an i18n PR. Use when user provides a GitHub repo URL and asks to "translate tech docs", "翻译技术文档", "翻译英文文档", "把这个仓库的文档翻译成中文", or wants to localize a docs site without rebuilding the framework. Does NOT handle deployment to a specific destination (use a separate skill for that).
-version: 1.0.0
+description: Translates an English technical documentation repository from GitHub into Chinese while preserving the original site's framework (MkDocs Material or VitePress) and all configuration. Output is a runnable, Chinese-localized copy of the source project, drop-in compatible with the original repo. Use when user provides a GitHub repo URL and asks to "translate tech docs", "翻译技术文档", "翻译英文文档", "把这个仓库的文档翻译成中文", or wants to localize a docs site without rebuilding the framework. Does NOT handle deployment to a specific destination (use a separate skill for that).
+version: 1.0.2
 metadata:
   openclaw:
     homepage: https://github.com/dgai5016/dg-skills#dg-translate-tech-docs
@@ -12,14 +12,14 @@ metadata:
 
 # Translate Tech Docs (GitHub → Chinese)
 
-把 GitHub 上的英文技术文档仓库翻译成中文版本，**保留原站点的框架与所有配置**。产物是一份「中文化的原项目」，可以直接覆盖回原仓库，甚至提 PR 给原作者做 i18n。
+把 GitHub 上的英文技术文档仓库翻译成中文版本，**保留原站点的框架与所有配置**。产物是一份「可运行的中文化原项目」。
 
 **职责边界（重要）：**
 
 - ✅ **做**：翻译 markdown 内容、翻译 nav/sidebar 标题、判断 site_name 是否需要翻译
-- ❌ **不做**：修改 base URL、修改 edit_uri/repo_url、创建 `.project.json`、纳入某个特定的文档导航站
+- ❌ **不做**：修改 base URL、修改 edit_uri/repo_url、创建目标仓库专属元信息、修改 CI/CD 配置——这些属于部署/发布阶段，不在本 skill 范围
 
-后者属于"搬运/发布"的范畴，应由专门针对目标仓库的另一个 skill 处理。这样本 skill 才能保持通用——任何人 clone 走都能用。
+判断标准：「产物是不是一份可运行的中文化原项目？」—— 文档站点能正常启动（mkdocs serve / npm run docs:dev 不报错），所有 md 文件已翻译为中文，原框架与配置保留完整。
 
 ## User Input Tools
 
@@ -85,7 +85,7 @@ git clone https://github.com/{owner}/{repo}.git /tmp/dg-translate-{repo}
 
 **为什么完整 clone（不用 `--depth 1`）？**
 - 翻译时需要记录当前 HEAD 的 commit hash，作为「翻译基于的原文版本」
-- 未来原仓库更新后，dg-translate-and-import 通过 `git ls-remote` + `git diff {old}..{new}` 找出变更文件，做增量翻译
+- 未来原仓库更新后，可以通过 `git ls-remote` + `git diff {old}..{new}` 找出变更文件，做增量翻译
 - 完整 clone 让 commit hash 有意义；浅克隆也能拿到 HEAD hash，但本地无法 diff 历史
 
 **注意**：少数项目的文档配置文件（如 `mkdocs.yml`）在仓库根，不在 `docs/` 下。Step 1 选择"整个仓库"即可处理。
@@ -154,9 +154,9 @@ FRAMEWORK=$(bash {baseDir}/scripts/detect-framework.sh "{输出目录}")
 }
 ```
 
-这个清单是给搬运 skill（如 dg-import-docs）的契约——搬运 skill 据此只复制变更文件，**避免覆盖未翻译的英文原文**（增量模式下未变更文件仍是英文）。
+这个清单的作用：让下游流程（部署、同步到其他仓库、二次分发等）能据此只处理变更文件，**避免覆盖未翻译的英文原文**（增量模式下未变更文件仍是英文）。
 
-**全量模式下**：可选输出 `.changed-files.json`（包含全部 md 文件清单）；搬运 skill 检测不到时按全量复制处理。
+**全量模式下**：可选输出 `.changed-files.json`（包含全部 md 文件清单）；下游流程检测不到时按全量处理。
 
 ### Step 4.5: Record Source Version
 
@@ -188,9 +188,9 @@ date -u +"%Y-%m-%dT%H:%M:%SZ"
 ```
 
 **为什么单独文件？**
-- `.source-version.json` 是本 skill 的产物（通用）
-- 搬运 skill（dg-import-docs）负责读取它，把版本字段合并到目标仓库的 `.project.json`
-- 本 skill 不需要知道目标仓库的元信息 schema，保持通用
+- `.source-version.json` 是本 skill 的产物，记录翻译基于的原文版本
+- 下游流程可读取它，把版本信息合并到目标仓库自己的元信息 schema 中（如需要）
+- 本 skill 不需要知道目标仓库的元信息 schema，保持通用——任何人 clone 走都能用
 
 **增量模式下**：如果用户传入新的 `--output-dir`（覆盖现有翻译），重写 `.source-version.json`。如果输出目录已存在 `.source-version.json` 且未指定覆盖，警告用户「检测到现有版本 {old_short}，确认要用新版本 {new_short} 替换吗？」
 
@@ -256,15 +256,14 @@ find {输出目录} -name "*.md" | head -5 | xargs -I{} sh -c 'echo "=== {} ==="
 
 ## Scope Boundary (Reminder)
 
-下面这些**不要做**——它们是搬运/发布 skill 的职责：
+下面这些**不要做**——它们属于部署/发布阶段，不在本 skill 范围：
 
 - ❌ 修改 `base` URL（VitePress 的 `base` / Docusaurus 的 `baseUrl`）
 - ❌ 修改 `edit_uri`、`repo_url`、`site_url` 等部署相关配置
-- ❌ 创建 `.project.json` 之类的目标仓库专属元信息
-- ❌ 把项目复制到某个特定的文档导航仓库（如 `dg-docs-cn`）
+- ❌ 创建目标仓库专属的元信息文件（如 `.project.json`、特定导航站的 schema 等）
 - ❌ 修改 CI/CD 配置（如 `.github/workflows/deploy.yml`）
 
-判断标准：「产物能不能直接放回原项目甚至提 PR 给原作者？」如果能，归本 skill；如果跟某个特定目标仓库强相关，归搬运 skill。
+判断标准：「产物是不是一份可运行的中文化原项目？」—— 文档站点能正常启动，所有 md 文件已翻译为中文，原框架与配置保留完整。
 
 ## Extension Support
 

@@ -12,7 +12,7 @@
 
 ### dg-translate-tech-docs
 
-把 GitHub 上的英文技术文档仓库翻译成中文，保留原站点框架与配置（MkDocs Material / VitePress）。产物可直接放回原项目，甚至提 PR 给原作者做 i18n。
+把 GitHub 上的英文技术文档仓库翻译成中文，保留原站点框架与配置（MkDocs Material / VitePress）。产物是一份可运行的中文化原项目。
 
 ```bash
 # 翻译整个文档站

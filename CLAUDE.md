@@ -20,9 +20,9 @@ dg-skills/
 
 **通用优先**：本仓库只收录通用 skill。任何强依赖特定仓库的目录结构、CI 配置、部署目标的 skill，归目标仓库的 `.claude/skills/`，不进这里。
 
-判断标准：「产物能不能直接放回原项目甚至提 PR 给原作者？」
-- 能 → 通用 skill，放本仓库
-- 不能 → 专属 skill，放目标仓库 `.claude/skills/`
+判断标准：「这个 skill 是否依赖特定目标仓库的目录结构、CI 配置、部署目标？」
+- 否 → 通用 skill，放本仓库
+- 是 → 专属 skill，放目标仓库 `.claude/skills/`
 
 **复用既有工具**：不重新造轮子。例如翻译类 skill 直接调用已安装的 `baoyu-translate`，不重复实现翻译引擎。
 
@@ -94,8 +94,8 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 | Skill | 版本 | 职责 |
 |-------|------|------|
-| `dg-translate-tech-docs` | 1.0.0 | GitHub 英文技术文档 → 中文，保留原框架（MkDocs Material / VitePress）。产物可放回原项目或提 i18n PR |
-| `dg-git-push` | 1.1.0 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
+| `dg-translate-tech-docs` | 1.0.2 | GitHub 英文技术文档 → 中文，保留原框架（MkDocs Material / VitePress）。产物是可运行的中文化原项目 |
+| `dg-git-push` | 1.2.0 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
 
 ## 通用 vs 专属的判断示例
 
