@@ -93,7 +93,7 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 | Skill | 版本 | 职责 |
 |-------|------|------|
-| `dg-git-push` | 1.3.0 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
+| `dg-git-push` | 1.4.0 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
 
 ## 通用 vs 专属的判断示例
 
