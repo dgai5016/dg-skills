@@ -198,19 +198,61 @@ ${ANALYSIS_SENTENCE_1} ${ANALYSIS_SENTENCE_2}
 
 **严禁**在 auto 模式里加任何 yes/no 二次询问。报告仍然展示（便于事后回看），但执行不再等待。
 
+**auto 模式足迹措辞**：
+- 正常模式：`[auto 模式] 上述内容已自动执行：git add -A → git commit → git push`
+- PUSH_ONLY 模式：`[auto 模式] 上述内容已自动执行：git push`（跳过 add/commit）
+
 ### 用户自带 message 模式
 
 骨架完全相同，只是 `## Commit Message 预览` 段贴用户给的原文。其他段落不受影响。
 
-## 工作区无改动（独立流程，不进入完整报告）
+## 真正无事可做（clean + 无未推送 commit）
 
-STATUS 输出 `(clean — no changes)` 时，**不进入完整报告**，直接输出一段说明后退出：
+STATUS 输出 `(clean — no changes)` **且** BRANCH 段 `ahead: 0`（或 `ahead: (n/a)` 且 HEAD 无 commit）时，**不进入完整报告**，直接输出一段说明后退出：
 
 ```
-工作区无改动（git status 干净），已退出，未执行任何 git 操作。
+工作区干净，且本地与 upstream 同步（无未推送 commit），已退出，未执行任何 git 操作。
 ```
 
-这是 SKILL.md Step 3a 的分支，与本模板的 5 段骨架无关。
+这是 SKILL.md Step 3a 的退出分支，与本模板的 5 段骨架无关。
+
+## Push-only 模式（工作区干净但有未推送 commit）
+
+STATUS 输出 `(clean — no changes)` **且** BRANCH 段 `ahead > 0` 时，走 **4 段骨架**（不是 5 段）：
+
+```
+## 目标分支
+
+  - 当前分支: ${CURRENT_BRANCH}${BRANCH_NOTE}
+  - Upstream: ${UPSTREAM_STATUS}
+  - Remote: ${REMOTE_STATUS}${WARNINGS_BULLET}
+
+## 待推送 commit（工作区无新改动）
+
+- ${HASH1} ${SUBJECT1}
+- ${HASH2} ${SUBJECT2}
+- ${HASH3} ${SUBJECT3}
+...（最多列 10 条，超过则末尾追加「... 还有 N 个未列出」）
+
+## 改动分析
+
+工作区无新改动，但本地有 ${N} 个未推送 commit。属于纯推送操作（跳过 add/commit）。
+
+## 确认
+
+回复 y / yes / 继续 确认推送，输入其他任何内容或明确拒绝则退出流程。
+```
+
+**字面约束（硬性）**：
+- 4 个段落标题字面固定：`## 目标分支` / `## 待推送 commit（工作区无新改动）` / `## 改动分析` / `## 确认`——禁止写成 `## 待推送` / `## 待推送 commit` 等任何变体
+- 待推送 commit 段每行格式：`- <7-char-hash> <subject>`，subject 取自 `git log @{u}..HEAD --oneline` 输出（hash 与 subject 间 1 个空格）
+- 列表超 10 条时，第 11 行写 `- ... 还有 N 个未列出`（N = ahead - 10），不展开
+- 改动分析段必须 2 句——第 1 句描述状态（工作区干净 + N 个未推送），第 2 句定性（纯推送 / 跳过 add/commit）
+- 确认段措辞与正常模式的区别：「确认推送」而不是「确认提交并推送」
+
+**末尾处理（同正常模式）**：
+- 默认交互模式 → 等待 y 确认
+- `--auto` 模式 → 跳过确认，追加 `[auto 模式] 上述内容已自动执行：git push`（**不是** `git add -A → git commit → git push`）
 
 ## 完整示例
 

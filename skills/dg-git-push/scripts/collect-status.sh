@@ -38,10 +38,21 @@ else
   remote="${remotes%%$'\n'*}"
 fi
 
+# ahead/behind: only meaningful when upstream exists
+if [[ "$upstream" != "(none)" ]]; then
+  ahead=$(git -C "$REPO_PATH" rev-list --count '@{u}..HEAD' 2>/dev/null || echo 0)
+  behind=$(git -C "$REPO_PATH" rev-list --count 'HEAD..@{u}' 2>/dev/null || echo 0)
+else
+  ahead="(n/a)"
+  behind="(n/a)"
+fi
+
 echo "=== BRANCH ==="
 echo "current: $current_branch"
 echo "upstream: $upstream"
 echo "remote: $remote"
+echo "ahead: $ahead"
+echo "behind: $behind"
 echo
 
 # === STATUS ===
