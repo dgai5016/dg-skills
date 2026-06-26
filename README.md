@@ -29,10 +29,10 @@
 
 ### dg-learn
 
-对任意学习资料（Markdown / PDF / URL / 文件夹 / 混合输入）生成结构化学习指南 + 测试题，支持自测和 AI 问答测试两种验证方式。
+对任意学习资料（Markdown / PDF / URL / 文件夹 / 混合输入）生成结构化学习指南 + 测试题。学习指南以**学习路径**为主线（按资料知识体系分阶段，每阶段含学习目标、知识点带章节出处、学习提示）。所有产物整合到 `dg-learn/{name}/` 目录下（AI 推荐 3 个候选目录名，用户选择或自定义）。支持自测和 AI 问答测试两种验证方式。
 
 ```bash
-# 生成模式：单份资料 → 学习指南 + 题库
+# 生成模式：单份资料 → dg-learn/{name}/guide.md + quiz.md
 /dg-learn notes.md
 
 # 多份资料混合（md + pdf + url）
@@ -43,11 +43,18 @@
 /dg-learn --level=hard notes.md
 /dg-learn --types=choice,judge notes.md
 
+# 生成后的目录结构：
+# dg-learn/
+# └── react-hooks/           ← AI 推荐 + 用户选定的目录名
+#     ├── guide.md           ← 学习指南（3 段：资料清单 / 主题概述 / 学习路径）
+#     ├── quiz.md            ← 题库（题 > 20 时拆成 quiz/ 目录）
+#     └── wrong-answers.md   ← 测试后生成的错题集
+
 # 测试模式：把题库给 AI，AI 一道一道问 + 立刻判分 + 生成错题集
-/dg-learn quiz.md
+/dg-learn dg-learn/react-hooks/quiz.md
 
 # 错题重做
-/dg-learn wrong-answers.md
+/dg-learn dg-learn/react-hooks/wrong-answers.md
 ```
 
 ## 安装
