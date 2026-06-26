@@ -27,34 +27,25 @@
 /dg-git-push --auto 发布 v1.2.0
 ```
 
-### dg-learn
+### dg-how-to-learn
 
-对任意学习资料（Markdown / PDF / URL / 文件夹 / 混合输入）生成结构化学习指南 + 测试题。学习指南以**学习路径**为主线（按资料知识体系分阶段，每阶段含学习目标、知识点带章节出处、学习提示）。所有产物整合到 `dg-learn/{name}/` 目录下（AI 推荐 3 个候选目录名，用户选择或自定义）。支持自测和 AI 问答测试两种验证方式。
+输入一个**学习资料文件夹**，生成一份学习指南，告诉你**怎么学这份资料**——先学哪几个文件、后学哪几个、最后学哪几个。学习指南包含 3 段：树状资料清单（含文件间依赖关系）+ 主题概述 + 文件维度的学习路径（每个文件含「讲什么 + 在体系中的位置」和「怎么学」）。派 subagent 并行处理文件夹内每个 `.md/.markdown/.pdf` 文件。产物整合到 `dg-how-to-learn/{name}/` 目录下（AI 推荐 3 个候选目录名，用户选择或自定义）。
+
+> 当前版本只支持文件夹输入，不生成题库或测试（未来版本再加）。
 
 ```bash
-# 生成模式：单份资料 → dg-learn/{name}/guide.md + quiz.md
-/dg-learn notes.md
-
-# 多份资料混合（md + pdf + url）
-/dg-learn notes.md paper.pdf https://example.com/article
-
-# 控制题量 / 难度 / 题型
-/dg-learn --count=10 notes.md
-/dg-learn --level=hard notes.md
-/dg-learn --types=choice,judge notes.md
+# 唯一用法：传入一个学习资料文件夹
+/dg-how-to-learn tutorials/
 
 # 生成后的目录结构：
-# dg-learn/
+# dg-how-to-learn/
 # └── react-hooks/           ← AI 推荐 + 用户选定的目录名
-#     ├── guide.md           ← 学习指南（3 段：资料清单 / 主题概述 / 学习路径）
-#     ├── quiz.md            ← 题库（题 > 20 时拆成 quiz/ 目录）
-#     └── wrong-answers.md   ← 测试后生成的错题集
+#     └── guide.md           ← 学习指南（3 段：树状资料清单 / 主题概述 / 文件维度学习路径）
 
-# 测试模式：把题库给 AI，AI 一道一道问 + 立刻判分 + 生成错题集
-/dg-learn dg-learn/react-hooks/quiz.md
-
-# 错题重做
-/dg-learn dg-learn/react-hooks/wrong-answers.md
+# 不支持的输入（会报错）：
+# /dg-how-to-learn notes.md              ❌ 只支持文件夹
+# /dg-how-to-learn https://example.com   ❌ 只支持文件夹
+# /dg-how-to-learn --count=10 tutorials/ ❌ 当前不支持任何 flag
 ```
 
 ## 安装
