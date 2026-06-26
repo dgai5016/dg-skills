@@ -91,6 +91,7 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 | Skill | 版本 | 职责 |
 |-------|------|------|
 | `dg-git-push` | 1.4.1 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
+| `dg-learn` | 1.0.0 | 对任意资料生成学习指南 + 测试题（4 种题型）→ 支持自测或 AI 问答测试（一道一道立刻判 + 错题集重做）→ 多资料 subagent 并行处理 + 题库超 20 题自动拆分 |
 
 ## 通用 vs 专属的判断示例
 

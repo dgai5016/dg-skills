@@ -27,6 +27,29 @@
 /dg-git-push --auto 发布 v1.2.0
 ```
 
+### dg-learn
+
+对任意学习资料（Markdown / PDF / URL / 文件夹 / 混合输入）生成结构化学习指南 + 测试题，支持自测和 AI 问答测试两种验证方式。
+
+```bash
+# 生成模式：单份资料 → 学习指南 + 题库
+/dg-learn notes.md
+
+# 多份资料混合（md + pdf + url）
+/dg-learn notes.md paper.pdf https://example.com/article
+
+# 控制题量 / 难度 / 题型
+/dg-learn --count=10 notes.md
+/dg-learn --level=hard notes.md
+/dg-learn --types=choice,judge notes.md
+
+# 测试模式：把题库给 AI，AI 一道一道问 + 立刻判分 + 生成错题集
+/dg-learn quiz-20260626-143000.md
+
+# 错题重做
+/dg-learn wrong-answers-20260626-160000.md
+```
+
 ## 安装
 
 把本仓库作为 marketplace 添加到 Claude Code：
