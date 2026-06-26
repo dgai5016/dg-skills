@@ -189,7 +189,7 @@ function WindowWidth() {
 ### 题目总数 ≤ 20：单文件
 
 ```
-quiz-{YYYYMMDD-HHmmss}.md
+quiz.md
 ```
 
 内部结构：
@@ -220,7 +220,7 @@ quiz-{YYYYMMDD-HHmmss}.md
 ### 题目总数 > 20：拆分目录
 
 ```
-quiz-{YYYYMMDD-HHmmss}/
+quiz/
 ├── quiz-index.md              # 索引文件
 ├── choice/
 │   ├── hooks.md               # 选择题 - Hooks 知识点（题量 > 5 才拆）
@@ -253,7 +253,7 @@ quiz-{YYYYMMDD-HHmmss}/
 ---
 dg-learn-quiz: true
 dg-learn-type: index
-dg-learn-version: 1.0
+dg-learn-version: 1.1
 title: React Hooks 学习题库（索引）
 created_at: 2026-06-26
 source_materials:
@@ -263,7 +263,7 @@ stats:
   total: 25
   by_type: {choice: 12, judge: 5, short: 6, apply: 2}
   by_difficulty: {easy: 8, medium: 12, hard: 5}
-guide_file: ../guide-20260626-143000.md
+guide_file: ../guide.md
 sub_quizzes:
   - {path: choice/hooks.md, type: choice, knowledge_point: Hooks, count: 6}
   - {path: choice/state.md, type: choice, knowledge_point: State, count: 6}
@@ -298,7 +298,7 @@ sub_quizzes:
 - [apply/apply.md](apply/apply.md) —— 2 题（合并）
 
 ## 关联学习指南
-- [../guide-20260626-143000.md](../guide-20260626-143000.md)
+- [../guide.md](../guide.md)
 ```
 
 ### 子文件（拆分时）
@@ -309,7 +309,7 @@ sub_quizzes:
 ---
 dg-learn-quiz: true
 dg-learn-type: subquiz
-dg-learn-version: 1.0
+dg-learn-version: 1.1
 parent_index: ../quiz-index.md
 type: choice                       # 该子文件的题型
 knowledge_point: Hooks             # 该子文件的知识点（合并时为 null）
@@ -319,7 +319,7 @@ count: 6
 
 ## 错题集文件
 
-测试结束自动生成 `wrong-answers-{YYYYMMDD-HHmmss}.md`，本身也是题库格式，下次 `/dg-learn wrong-answers-xxx.md` 直接进入测试模式重做错题。
+测试结束自动生成 `wrong-answers.md`，本身也是题库格式，下次 `/dg-learn wrong-answers.md` 直接进入测试模式重做错题。
 
 **frontmatter：**
 
@@ -327,10 +327,10 @@ count: 6
 ---
 dg-learn-quiz: true
 dg-learn-type: wrong-answers
-dg-learn-version: 1.0
+dg-learn-version: 1.1
 title: React Hooks 错题集
 created_at: 2026-06-26
-parent_quiz: ./quiz-20260626-143000.md
+parent_quiz: ./quiz.md
 stats:
   total: 4
   by_type: {choice: 0, judge: 1, short: 2, apply: 1}
@@ -345,7 +345,7 @@ total_quiz_count: 18
 ```markdown
 # React Hooks 错题集
 
-> 来源题库：[quiz-20260626-143000.md](quiz-20260626-143000.md)
+> 来源题库：[quiz.md](quiz.md)
 > 测试时间：2026-06-26 15:30
 > 错题数：4 / 总题数 18（正确率 78%）
 

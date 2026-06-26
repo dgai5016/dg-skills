@@ -187,7 +187,7 @@
 ```markdown
 ---
 dg-learn-guide: true
-dg-learn-version: 1.0
+dg-learn-version: 1.1
 title: React Hooks 学习指南
 created_at: 2026-06-26
 source_materials:
@@ -198,7 +198,7 @@ knowledge_points: [useState, useEffect, useContext, useMemo, useCallback, useRef
 stats:
   total_knowledge_points: 8
   materials_count: 3
-quiz_file: ./quiz-20260626-143000.md
+quiz_file: ./quiz.md
 ---
 
 # React Hooks 学习指南
@@ -254,7 +254,7 @@ quiz_file: ./quiz-20260626-143000.md
 | 字段 | 必需 | 说明 |
 |------|------|------|
 | `dg-learn-guide` | 是 | 固定 `true`，标识这是学习指南（与题库的 `dg-learn-quiz` 对应） |
-| `dg-learn-version` | 是 | skill 版本，当前 `1.0` |
+| `dg-learn-version` | 是 | skill 版本，当前 `1.1` |
 | `title` | 是 | 学习指南标题（根据资料主题生成） |
 | `created_at` | 是 | 生成日期 `YYYY-MM-DD` |
 | `source_materials` | 是 | 资料路径/URL 数组（与资料清单表格同步） |

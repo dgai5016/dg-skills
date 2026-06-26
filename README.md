@@ -44,10 +44,10 @@
 /dg-learn --types=choice,judge notes.md
 
 # 测试模式：把题库给 AI，AI 一道一道问 + 立刻判分 + 生成错题集
-/dg-learn quiz-20260626-143000.md
+/dg-learn quiz.md
 
 # 错题重做
-/dg-learn wrong-answers-20260626-160000.md
+/dg-learn wrong-answers.md
 ```
 
 ## 安装
