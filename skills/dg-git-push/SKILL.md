@@ -1,7 +1,7 @@
 ---
 name: dg-git-push
 description: Analyzes git changes in the current repository, generates a bilingual (English + Chinese) Conventional Commits message, shows a structured report (target branch + commit message + changed files + analysis), waits for user confirmation, then runs `git add -A` + `git commit` + `git push` in one shot. Use when the user says "/dg-git-push", "提交并推送", "push 一下", "commit and push", "提交代码", or wants to commit and push after finishing a chunk of work. Supports `--auto` (no confirmation), `--style=conventional` (default, future-extensible), and user-provided custom messages. Does NOT add `--no-verify`, does NOT protect main/master (but explicitly shows the target branch in the report), does NOT create PRs/MRs, does NOT amend history.
-version: 1.4.1
+version: 2.7.1
 metadata:
   openclaw:
     homepage: https://github.com/dgai5016/dg-skills#dg-git-push

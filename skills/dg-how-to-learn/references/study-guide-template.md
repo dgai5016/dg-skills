@@ -4,11 +4,11 @@
 
 ## 整体结构
 
-学习指南按以下顺序组织段落（**3 段全部固定生成**）：
+正文开头一行资料来源引用块 + **3 段固定结构**：
 
 | 顺序 | 段落 | 作用 |
 |------|------|------|
-| 1 | 资料清单 | ASCII 树展示文件夹结构 + 文件间依赖关系 |
+| 1 | 资料清单 | 嵌套列表展示文件夹结构 + 每个文件讲什么 |
 | 2 | 主题概述 | 一句话说明这份资料讲什么、目标读者 |
 | **3** | **学习路径** | **核心**：按文件分阶段的学习顺序，每个文件讲什么 + 怎么学 |
 
@@ -16,70 +16,45 @@
 
 ---
 
-## 段落 1：资料清单（树状）
+## 段落 1：资料清单（嵌套列表）
 
 ### 设计目的
 
-让用户一眼看到文件夹的目录结构 + 每个文件讲什么 + 文件之间的依赖关系，作为「学习路径」的地图基础。
+让用户一眼看到文件夹的目录结构 + 每个文件讲什么，作为「学习路径」的地图基础。
 
 ### 格式
 
-ASCII 树展示目录结构，每个文件**至少两行说明**：
+嵌套缩进列表展示目录结构，每个文件一行：文件名后冒号接「讲什么」：
 
 ```markdown
 ## 资料清单
 
-react-hooks-tutorials/    （输入的文件夹，共 7 个 .md 文件）
-├── intro.md
-│   入门：Hooks 是什么、为什么出现
-│   首读，是后续所有内容的前置
-├── basic/
-│   ├── state.md
-│   │   useState 基础用法
-│   │   前置：intro.md
-│   ├── effect.md
-│   │   useEffect 副作用处理
-│   │   前置：state.md（用到 state 概念）
-│   └── context.md
-│       useContext 跨组件共享
-│       前置：state.md
-├── advanced/
-│   ├── closures.md
-│   │   闭包陷阱（effect 里读到 stale state）
-│   │   前置：effect.md
-│   └── patterns.md
-│       自定义 Hook 模式与抽象
-│       前置：effect.md、context.md
-└── examples/
-    └── counter.md
-        完整示例：计数器组件
-        前置：state.md、effect.md
+- react-hooks-tutorials/（共 7 个 .md 文件）
+    - intro.md: Hooks 是什么、为什么出现（入门）
+    - basic/
+        - state.md: useState 基础用法
+        - effect.md: useEffect 副作用处理
+        - context.md: useContext 跨组件共享
+    - advanced/
+        - closures.md: 闭包陷阱（effect 里读到 stale state）
+        - patterns.md: 自定义 Hook 模式与抽象
+    - examples/
+        - counter.md: 完整示例：计数器组件
 ```
 
 ### 字段说明
 
-每个文件至少两行：
+每个文件单行：`- 文件名: 讲什么`——文件名后接半角冒号 + 一个空格 + 一句「讲什么」描述。
 
-- **第 1 行**：一句话描述这个文件讲什么
-- **第 2 行起**：与其他文件的关联（可选），格式 `前置：xxx.md` / `并行：xxx.md` / `延伸：xxx.md`，可带括号补充说明
+### 缩进约定
 
-### 关联类型
-
-| 类型 | 含义 |
-|------|------|
-| `前置：X.md` | 学这个文件前要先看 X |
-| `并行：X.md` | 与 X 是平级主题，可互换学习顺序 |
-| `延伸：X.md` | 学完后可看 X 深入 |
-
-### 树形符号约定
-
-- 文件夹/文件名后换行，下一行起每行缩进对齐
-- 同级用 `├──`，最后一级用 `└──`
-- 续行用 `│`（非末级）或空格（末级）对齐
+- 每级 4 空格缩进（Obsidian 等渲染器对 4 空格子列表最稳定；2 空格在父项无内容时可能被判为同级）
+- 子目录作为父 bullet（形如 `basic/`），其下文件作为子 bullet
+- 文件描述跟在文件名同一行（冒号分隔），无续行
 
 ### 信息来源
 
-关联信息由**主 skill 直接读取所有文件原文后判断**——看到每个文件的完整内容，能精准识别交叉引用（如 A 文件里写「前面讲过的 X」对应到 B 文件）、概念衔接、目录结构。不依赖任何 subagent 摘要中间层。
+每个文件的「讲什么」由**主 skill 直接读取所有文件原文后判断**——看到每个文件的完整内容，能精准概括主题和在体系中的位置。不依赖任何 subagent 摘要中间层。
 
 ---
 
@@ -184,48 +159,23 @@ react-hooks-tutorials/    （输入的文件夹，共 7 个 .md 文件）
 ## 完整示例（React Hooks 主题）
 
 ```markdown
----
-dg-how-to-learn-guide: true
-dg-how-to-learn-version: 1.3
-title: React Hooks 学习指南
-created_at: 2026-06-27
-source_materials:
-  - ../../react-hooks-tutorials/
-stats:
-  file_count: 7
-  folder_count: 4
-  stages_count: 3
----
+> 资料来源：react-hooks-tutorials/
 
 # React Hooks 学习指南
 
 ## 资料清单
 
-react-hooks-tutorials/    （共 7 个 .md 文件）
-├── intro.md
-│   入门：Hooks 是什么、为什么出现
-│   首读，是后续所有内容的前置
-├── basic/
-│   ├── state.md
-│   │   useState 基础用法
-│   │   前置：intro.md
-│   ├── effect.md
-│   │   useEffect 副作用处理
-│   │   前置：state.md
-│   └── context.md
-│       useContext 跨组件共享
-│       前置：state.md
-├── advanced/
-│   ├── closures.md
-│   │   闭包陷阱（effect 里读到 stale state）
-│   │   前置：effect.md
-│   └── patterns.md
-│       自定义 Hook 模式与抽象
-│       前置：effect.md、context.md
-└── examples/
-    └── counter.md
-        完整示例：计数器组件
-        前置：state.md、effect.md
+- react-hooks-tutorials/（共 7 个 .md 文件）
+    - intro.md: Hooks 是什么、为什么出现（入门）
+    - basic/
+        - state.md: useState 基础用法
+        - effect.md: useEffect 副作用处理
+        - context.md: useContext 跨组件共享
+    - advanced/
+        - closures.md: 闭包陷阱（effect 里读到 stale state）
+        - patterns.md: 自定义 Hook 模式与抽象
+    - examples/
+        - counter.md: 完整示例：计数器组件
 
 ## 主题概述
 
@@ -274,26 +224,3 @@ react-hooks-tutorials/    （共 7 个 .md 文件）
    - 怎么学：自己先实现一遍，再对照源码
 ```
 
----
-
-## frontmatter 字段说明
-
-| 字段 | 必需 | 说明 |
-|------|------|------|
-| `dg-how-to-learn-guide` | 是 | 固定 `true`，标识这是学习指南 |
-| `dg-how-to-learn-version` | 是 | skill 版本，当前 `1.3` |
-| `title` | 是 | 学习指南标题（根据资料主题生成） |
-| `created_at` | 是 | 生成日期 `YYYY-MM-DD` |
-| `source_materials` | 是 | 输入的文件夹路径数组（**路径相对 guide.md 所在目录**——产物在 `dg-how-to-learn/{name}/` 下，资料文件夹在父目录的父目录，写 `../../xxx/`） |
-| `stats.file_count` | 是 | 文件夹内纳入处理的文件总数 |
-| `stats.folder_count` | 是 | 文件夹内的子目录数（含根目录自己） |
-| `stats.stages_count` | 是 | 学习路径的阶段总数 |
-
-### source_materials 路径写法
-
-产物在 `dg-how-to-learn/{name}/guide.md`，资料文件夹在 `{cwd}/` 下，相对回溯：
-
-| 资料位置 | source_materials 写法 |
-|---------|----------------------|
-| `{cwd}/react-hooks-tutorials/` | `../../react-hooks-tutorials/` |
-| `{cwd}/sub-dir/my-notes/` | `../../sub-dir/my-notes/` |

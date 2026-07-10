@@ -1,0 +1,13 @@
+{
+  "name": "dg-douban-book-scripts",
+  "private": true,
+  "version": "2.7.1",
+  "description": "Playwright-based Douban book search helper for dg-douban-book skill",
+  "scripts": {
+    "postinstall": "playwright install chromium-headless-shell"
+  },
+  "dependencies": {
+    "playwright": "^1.61.0"
+  }
+}
+

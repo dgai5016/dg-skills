@@ -5,7 +5,7 @@
   },
   "metadata": {
     "description": "Personal collection of reusable Claude Code skills",
-    "version": "2.6.1"
+    "version": "2.7.1"
   },
   "plugins": [
     {
@@ -15,7 +15,8 @@
       "strict": false,
       "skills": [
         "./skills/dg-git-push",
-        "./skills/dg-how-to-learn"
+        "./skills/dg-how-to-learn",
+        "./skills/dg-douban-book"
       ]
     }
   ]

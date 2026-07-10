@@ -63,14 +63,15 @@ dg-skills/
 ## 编辑现有 skill 的注意事项
 
 - 改完 frontmatter 的 `version` 要同步升级（语义化）
-- **marketplace 版本跟随 skill 同步 bump**：`marketplace.json` 的 `metadata.version` 反映整个 marketplace 的状态，任何 skill 变化都要同步 bump，规则按"取最高级别"：
-  - skill **major** bump（破坏性变更）→ marketplace major bump
-  - skill **minor** bump（兼容性新功能，如 dg-git-push 1.0.0 → 1.1.0）→ marketplace minor bump
-  - skill **patch** bump（bug 修复）→ marketplace patch bump
-  - **新增 skill** → marketplace minor bump
-  - **删除 skill** → marketplace major bump
-  - 多个 skill 同时改动时，按最高级别为准（例如一个 patch + 一个 minor → marketplace minor bump）
-  - 除了 marketplace.json，还要同步更新 CLAUDE.md 的「现有 skills」表格里的版本列
+- **版本同步规则（重要）**：所有 skill 的 frontmatter `version` + `package.json` `version`（如有）+ `marketplace.json` 的 `metadata.version` + CLAUDE.md「现有 skills」表格版本列 **必须完全相同**——仓库永远只有一份版本号。
+  - 任何 skill 改动都同步 bump 所有版本号，bump 级别按本次变动的最高级别：
+    - 任何 skill **patch** 改动 → 所有版本一起 patch bump（如 2.7.0 → 2.7.1）
+    - 任何 skill **minor** 改动 → 所有版本一起 minor bump（如 2.7.0 → 2.8.0，patch 归 0）
+    - 任何 skill **major** 改动 → 所有版本一起 major bump（如 2.7.0 → 3.0.0，minor/patch 归 0）
+    - 多个 skill 同时改动时，按最高级别为准
+  - **新增 skill**：新 skill 加入时直接用当前统一版本号（不是从 1.0.0 起，否则破坏一致性）
+  - **删除 skill**：其他 skill 没变，版本号不动
+  - 除了 skill 文件和 marketplace.json，还要同步更新 CLAUDE.md「现有 skills」表格里的版本列
 - 不要为了"清理"而删除 `references/` 下被 SKILL.md 引用的文件——先全局搜引用
 
 ## 本地开发安装
@@ -90,8 +91,9 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 | Skill | 版本 | 职责 |
 |-------|------|------|
-| `dg-git-push` | 1.4.1 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
-| `dg-how-to-learn` | 1.3.0 | 输入一个学习资料文件夹 → 生成学习指南（3 段：树状资料清单 + 主题概述 + 文件维度学习路径）。学习路径直接回答「先学哪几个文件、后学哪几个、最后学哪几个」，每个文件含「讲什么（含体系位置）+ 怎么学」。派 subagent 并行处理文件夹内每个文件。产物整合到 `dg-how-to-learn/{name}/`（AI 推荐目录名 + 用户选/自定义）。当前**只支持文件夹输入**、**不生成题库/测试**（未来版本再加） |
+| `dg-git-push` | 2.7.1 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
+| `dg-how-to-learn` | 2.7.1 | 输入一个学习资料文件夹 → 生成学习指南（3 段：嵌套列表资料清单 + 主题概述 + 文件维度学习路径）。学习路径直接回答「先学哪几个文件、后学哪几个、最后学哪几个」，每个文件含「讲什么（含体系位置）+ 怎么学」。派 subagent 并行处理文件夹内每个文件。产物整合到 `dg-how-to-learn/{name}/`（AI 推荐目录名 + 用户选/自定义）。当前**只支持文件夹输入**、**不生成题库/测试**（未来版本再加）。可选 `--obsidian` 转义 `<` 防 Obsidian 解析扰乱 |
+| `dg-douban-book` | 2.7.1 | 输入书名（可选作者）→ Playwright 抓豆瓣搜索 → **直接返豆瓣算法 top 1 单条结果**（书名 / 作者 / 出版社 / 出版年 / 评分 + 评分人数 / 豆瓣链接）。**主书名匹配判断精确/模糊**（按冒号切主书名，兼容「主书名相同 + 副标题不同」如「如何共读一本书」↔「如何共读一本书 : 高效引导社群学习」）；模糊时首句明确「豆瓣未收录」+ 给算法 top 1。**v2.0.1 起输出极简**（删装饰/排查建议、URL 改裸文字）。豆瓣搜索是 JS 动态渲染，所以用 Node.js + Playwright；首次跑自动 `npm install` 装 playwright（约 200MB）。**v2.0.0 起只返 Top 1**（v1.x 是 Top 3-5 候选列表）、**不抓书评/详情页**、**仅图书**（不含电影/音乐） |
 
 ## 通用 vs 专属的判断示例
 
@@ -107,3 +109,4 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 **调试 skill**：
 - **通用原则**：任何带 `scripts/` 的 skill，先用 `bash scripts/<script>.sh <args>` 独立验证脚本工作正常，再让 Claude 调用整个 skill
 - **dg-git-push**：用 `collect-status.sh <path>` 在目标仓库验证状态采集——BRANCH（含 ahead/behind）/ STATUS / DIFFSTAT / COMMIT-CONTEXT 四段是否完整、untracked 是否被列出、无 remote / 无 upstream 等边界是否正确标记 `(none)` / `(n/a)`
+- **dg-douban-book**：先在 skill/scripts 目录跑 `npm install`（首次），再用 `node scripts/douban-search.js --title=三体` 独立验证 JSON 输出。重点看：① selector 是否还有效（豆瓣改版会让 `.item-root` 失效）；② status 字段是否正确（ok/empty/blocked/error）；③ meta 行解析（作者/出版社/年份）是否合理。豆瓣 selector 易变，调脚本时优先调 `page.$$eval` 的子 selector 候选列表

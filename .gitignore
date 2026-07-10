@@ -7,3 +7,9 @@
 
 # Logs
 *.log
+
+# Node.js (skill 局部依赖，如 skills/dg-douban-book 的 playwright)
+node_modules/
+**/node_modules/
+npm-debug.log*
+.npm/

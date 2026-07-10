@@ -1,7 +1,7 @@
 ---
 name: dg-how-to-learn
-description: Generates a study guide from a folder of learning materials (Markdown / PDF files inside one folder). The guide has 3 sections - a tree-style file inventory (with explicit "前置/并行/延伸" dependencies between files), a one-paragraph topic overview, and a file-based learning path (which files to learn first, next, last; each file annotated with "what it covers + its role in the system" and "how to study it"). Use when the user says "/dg-how-to-learn", "学习这份资料", "这个文件夹怎么学", "这份资料怎么学", or wants to systematically learn from a folder of materials. 
-version: 1.3.0
+description: Generates a study guide from a folder of learning materials (Markdown / PDF files inside one folder). The guide has 3 sections - a nested-list file inventory (each file annotated with what it covers), a one-paragraph topic overview, and a file-based learning path (which files to learn first, next, last; each file annotated with "what it covers + its role in the system" and "how to study it"). Use when the user says "/dg-how-to-learn", "学习这份资料", "这个文件夹怎么学", "这份资料怎么学", or wants to systematically learn from a folder of materials. Pass --obsidian to escape angle brackets in the output for Obsidian compatibility (use when materials contain template or JSX syntax that disrupts Obsidian's markdown parser).
+version: 2.7.1
 ---
 
 # dg-how-to-learn
@@ -10,7 +10,7 @@ version: 1.3.0
 
 **职责边界（重要）：**
 
-- ✅ **做**：解析文件夹输入（递归子目录）、主 skill 端到端读取所有文件并做全局分析、生成学习指南（资料清单树状 + 主题概述 + 文件维度学习路径）、产物整合到 `dg-how-to-learn/{name}/`
+- ✅ **做**：解析文件夹输入（递归子目录）、主 skill 端到端读取所有文件并做全局分析、生成学习指南（资料清单嵌套列表 + 主题概述 + 文件维度学习路径）、产物整合到 `dg-how-to-learn/{name}/`
 - ❌ **不做**：初文件夹外的任何资源。
 
 ## User Input Tools
@@ -30,7 +30,7 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 
 1. 按空格把 args 切成 tokens
 2. 每个 token 按下列规则分类：
-   - 以 `--` 开头的 token → **未知 flag，报错退出**（当前不支持任何 flag，未来扩展时再加）
+   - 以 `--` 开头的 token → 检查是否为已知 flag。`--obsidian` 已知（开启 Obsidian 兼容模式，转义尖括号）；其余未知 flag 报错退出
    - 不以 `--` 开头的 token → 视为路径
 3. **路径必须是单个文件夹**——单文件、URL、多个路径混合、不存在的路径都报错退出
 
@@ -44,6 +44,7 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 | `/dg-how-to-learn https://...` | ❌ 报错：只支持文件夹输入 |
 | `/dg-how-to-learn a.md b.pdf` | ❌ 报错：只支持单个文件夹 |
 | `/dg-how-to-learn --count=10 tutorials/` | ❌ 报错：未知 flag `--count` |
+| `/dg-how-to-learn --obsidian tutorials/` | 模式=生成 + 开启 Obsidian 兼容（转义 `<`） |
 
 **报错信息模板**：
 ```
@@ -55,9 +56,10 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 **未知 flag 报错信息**：
 ```
 未知参数：--foo
-当前 dg-how-to-learn 不支持任何 flag（仅接受文件夹路径作为唯一参数）。
-未来版本可能加入控制选项。
+当前 dg-how-to-learn 只支持 --obsidian flag（其余 flag 不识别）。
 ```
+
+**`--obsidian` 何时用**：资料含 Templater `<%`、JSX/泛型 `<T>`、HTML 标签等会扰乱 Obsidian markdown 解析的尖括号语法时加此 flag。详见 [references/obsidian-compat.md](references/obsidian-compat.md)。
 
 ## Modes
 
@@ -74,6 +76,7 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 
 按 Parameter Parsing 解析，得到：
 - `FOLDER_PATH`（文件夹路径，**唯一**）
+- `OBSIDIAN_MODE`（布尔，是否开启 `--obsidian` 兼容模式，默认 false）
 
 任何不合规的输入（单文件、URL、多路径、未知 flag、不存在路径）→ 按对应报错模板退出。
 
@@ -89,7 +92,7 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 **文件夹展开规则：**
 - 递归子目录
 - 文件夹下所有 `.md/.markdown/.pdf` 文件都作为单独的资料文件处理
-- 保留相对路径（用于后续依赖关系判断和资料清单树状展示）
+- 保留相对路径（用于后续依赖关系判断和资料清单嵌套列表展示）
 
 收集完毕后得到扁平化的 `FILES[]`（每个元素是一个具体的文件路径，相对于 `FOLDER_PATH`）。
 
@@ -129,9 +132,9 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
    - 阶段数随资料复杂度变化（简单资料 2 个阶段，复杂资料 4-5 个）
    - 同阶段内文件有时有顺序（按依赖关系），有时是并行（无依赖）
    - **每个文件都必须归入某个阶段**（不能漏）
-4. **资料清单的关联标注**：从依赖关系图直接生成 `前置：xxx.md` / `并行：xxx.md` / `延伸：xxx.md` 标注
+4. **资料清单的文件描述**：为每个文件准备一句「讲什么」（融合主题 + 在体系中的位置），供资料清单段落使用
 
-得到 `FILES_SUMMARY[]`（每个文件含主题/讲什么/怎么学/依赖关系）和 `LEARNING_STAGES[]`（阶段划分）。
+得到 `FILES_SUMMARY[]`（每个文件含主题/讲什么/怎么学）和 `LEARNING_STAGES[]`（阶段划分）。
 
 ### Step 4.5: 确定产物目录名
 
@@ -139,23 +142,18 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 
 ### Step 5: 生成学习指南
 
-加载 [references/study-guide-template.md](references/study-guide-template.md)，按其模板生成 `guide.md`，**3 段固定结构**：
+加载 [references/study-guide-template.md](references/study-guide-template.md)，按其模板生成 `guide.md`——**正文开头一行资料来源引用块 + 3 段固定结构**：
 
-- **段落 1：资料清单（ASCII 树）**：按 Step 4 拼装的依赖关系生成树状展示，每个文件含描述 + 关联（`前置：xxx.md` / `并行：xxx.md` / `延伸：xxx.md`）
+- **正文开头（资料来源）**：一行引用块 `> 资料来源：{FOLDER_PATH}`（保留可追溯性）。**不生成 YAML frontmatter**——Obsidian 等渲染器对嵌套 YAML 字段支持差
+- **段落 1：资料清单（嵌套列表）**：按目录结构生成嵌套缩进列表（每级 4 空格），每个文件「文件名: 讲什么」同行（讲什么取自 Step 4 第 4 点）
 - **段落 2：主题概述**：2-3 句话概括这份资料讲什么、目标读者
 - **段落 3：学习路径**：按 Step 4 重排的 `LEARNING_STAGES[]` 生成分阶段结构。每阶段含「这一步的目标」+ 编号文件列表。每个文件两个 bullet 字段：
   - **讲什么**：1-2 句话，融合「文件主题」+「在体系中的位置」
   - **怎么学**：1-2 句阅读建议
 
-**frontmatter 字段**：
-- `dg-how-to-learn-guide: true`
-- `dg-how-to-learn-version: 1.3`
-- `title`（根据资料主题生成）
-- `created_at`（`YYYY-MM-DD`）
-- `source_materials`（输入的文件夹路径数组，相对 guide.md 用 `../../xxx/`）
-- `stats.file_count` / `stats.folder_count` / `stats.stages_count`
-
 写到 `dg-how-to-learn/{final-name}/guide.md`（{final-name} 由 Step 4.5 确定）。
+
+**若 `OBSIDIAN_MODE` 为 true**：生成 guide.md 后，按 [references/obsidian-compat.md](references/obsidian-compat.md) 的转义规则处理全文 `<` 字符——含 `<` 的反引号 inline code 改写成 `<code>&lt;...</code>`（保留等宽），普通文本裸 `<` 改成 `&lt;`。这让含 `<%`、`<T>` 等语法的 guide 在 Obsidian 里不被解析扰乱、不被 Templater 执行。
 
 ### Step 6: 输出报告
 
@@ -236,7 +234,8 @@ skill 接收一个 args 字符串（来自 `/dg-how-to-learn <args>`）。解析
 
 | 文件 | 用途 |
 |------|------|
-| [references/study-guide-template.md](references/study-guide-template.md) | 学习指南 3 段结构定义 + 树状资料清单格式 + 文件维度学习路径格式 + 完整示例 |
+| [references/study-guide-template.md](references/study-guide-template.md) | 学习指南 3 段结构定义 + 嵌套列表资料清单格式 + 文件维度学习路径格式 + 完整示例 |
+| [references/obsidian-compat.md](references/obsidian-compat.md) | `--obsidian` 模式的转义规则、触发条件、代价、局限 |
 
 ## Extension Support
 
