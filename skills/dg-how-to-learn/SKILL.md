@@ -1,7 +1,7 @@
 ---
 name: dg-how-to-learn
 description: Generates a study guide from a folder of learning materials (Markdown / PDF files inside one folder). The guide has 3 sections - a nested-list file inventory (each file annotated with what it covers), a one-paragraph topic overview, and a file-based learning path (which files to learn first, next, last; each file annotated with "what it covers + its role in the system" and "how to study it"). Use when the user says "/dg-how-to-learn", "学习这份资料", "这个文件夹怎么学", "这份资料怎么学", or wants to systematically learn from a folder of materials. Pass --obsidian to escape angle brackets in the output for Obsidian compatibility (use when materials contain template or JSX syntax that disrupts Obsidian's markdown parser).
-version: 2.7.1
+version: 2.7.2
 ---
 
 # dg-how-to-learn

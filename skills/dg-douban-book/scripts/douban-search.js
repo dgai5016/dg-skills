@@ -5,6 +5,10 @@
 // 输入：--title=<书名> [--author=<作者>]
 // 输出：JSON（query / result / status / is_exact_match / message），永远 exit 0，错误用 status 表达。
 // 取豆瓣算法返回的 top 1，不再做评分重排（v2.0.0 简化）。
+//
+// v2.7.2 起：
+//   1. 自动绕过 PoW 反爬挑战（点击 #sub 按钮 → 等前端 JS 跑完 SHA-512 → 跳回搜索结果）
+//   2. 持久化 cookie 到 /tmp/douban-state.json，下次启动复用以降低再次触发频控的概率
 
 // ===== 依赖自检 =====
 let chromium;
@@ -20,6 +24,13 @@ try {
   }));
   process.exit(0);
 }
+
+const fs = require('fs');
+
+// 持久化 cookie 的本地文件路径——首次跑没文件，跑过一次后写入；下次启动 context 时复用，
+// 降低再次触发频控的概率。放 /tmp 是因为：① cookie 不需要长期保存（豆瓣会过期）；
+// ② 重启清空反而是 feature（避免过期 cookie 干扰）；③ 跨平台都有 /tmp。
+const STATE_FILE = '/tmp/douban-state.json';
 
 // ===== 参数解析 =====
 function parseArgs(argv) {
@@ -116,6 +127,34 @@ function extractSubjectId(url) {
   return m ? m[1] : null;
 }
 
+// ===== PoW 反爬绕过 =====
+// 豆瓣风控触发后会把搜索结果页替换成 PoW（proof of work）挑战页：
+//   <form id="sec"><button id="sub"></button></form>
+// 真实浏览器（含 Playwright）执行前端 JS 跑 SHA-512 PoW，跑完自动 submit 跳回搜索结果。
+// 这里检测到 #sub 按钮就主动点击，让前端 JS 跑 PoW，然后等待 networkidle 触发（即跳回结果页）。
+// 同时持久化当前 context 的 cookie，下次启动复用以降低再次触发频控的概率。
+// 返回 true 表示命中并处理过 PoW 页，false 表示是正常页面（无 #sub）。
+async function handlePowIfPresent(page, context) {
+  const sub = await page.$('#sub').catch(() => null);
+  if (!sub) return false;
+  try {
+    await Promise.all([
+      page.waitForLoadState('networkidle', { timeout: 30000 }),
+      sub.click()
+    ]);
+  } catch (_) {
+    // 即便超时也继续——PoW 可能已完成但 networkidle 未触发
+  }
+  try {
+    const state = await context.storageState();
+    fs.writeFileSync(STATE_FILE, JSON.stringify(state));
+  } catch (_) {
+    /* ignore */
+  }
+  await page.waitForTimeout(1500);
+  return true;
+}
+
 // ===== 主流程 =====
 async function main() {
   const parsed = parseArgs(process.argv);
@@ -127,22 +166,30 @@ async function main() {
   const query = { title, author: author || null };
 
   let browser;
+  let context;
   try {
     browser = await chromium.launch({ headless: true });
-    const context = await browser.newContext({
+    const launchOpts = {
       userAgent:
         'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 ' +
         '(KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
       locale: 'zh-CN',
       viewport: { width: 1280, height: 800 }
-    });
+    };
+    // 复用上次保存的 cookie（如有），降低再次触发频控的概率
+    context = fs.existsSync(STATE_FILE)
+      ? await browser.newContext({ ...launchOpts, storageState: STATE_FILE })
+      : await browser.newContext(launchOpts);
     const page = await context.newPage();
 
     const url =
       'https://search.douban.com/book/subject_search?search_text=' +
       encodeURIComponent(title) +
       '&cat=1001';
-    await page.goto(url, { waitUntil: 'networkidle', timeout: 30000 });
+    await page.goto(url, { waitUntil: 'networkidle', timeout: 45000 });
+
+    // 触发 PoW 反爬时自动绕过（点击 #sub 按钮 → 等 networkidle 跳回结果页）
+    await handlePowIfPresent(page, context);
 
     // 等待任一已知 selector 出现
     const selectorCandidates = ['.item-root', '.item', '.detail', '#root .item'];
@@ -257,6 +304,16 @@ async function main() {
       message: e.message ? e.message.split('\n')[0] : String(e)
     });
   } finally {
+    // 无论本次搜索成功与否，都把 cookie 持久化到 STATE_FILE——
+    // 即便是 blocked 页留下的 cookie，下次复用也能降低再次被风控的概率。
+    if (context) {
+      try {
+        const s = await context.storageState();
+        fs.writeFileSync(STATE_FILE, JSON.stringify(s));
+      } catch (_) {
+        /* ignore */
+      }
+    }
     if (browser) {
       try {
         await browser.close();
