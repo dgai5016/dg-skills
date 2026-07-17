@@ -69,6 +69,35 @@
 豆瓣搜下 Designing Data-Intensive Applications
 ```
 
+### dg-learntime-estimate
+
+输入学习资源（**单文件 / 文件夹 / 视频（含合集）/ 书籍**），用纯量化模型估时，**同时输出三水平估时**——零基础 ×1.8 / 有基础 ×1.0 / 熟练 ×0.6，用户自己认领对应数字（不需要预先声明水平）。系数按类型分叉：中文 350 字/分、英文 200 wpm、代码精读 50 行/时、技术书 3 分/页、**视频时长直接作基础值**（v2.8.1 起视频模式不再区分纯看/含练习/高难度，不调内在难度）。资料内在难度（数学密集、跨领域、前沿论文 ×1.3）由 Claude 在算基础值时调整（仅文本/PDF/书模式）。文件夹 / 合集简单累加（不引入疲劳衰减）。视频 URL 通过 yt-dlp 自动抓时长 + **自动展开合集估所有 P**（首次 `pip install yt-dlp` ~50MB），**抓不到直接报错退出，不反问手报**。**不保存输出文件、不联动 dg-douban-book、不做个人速度校准**。时间格式统一「X 时 Y 分」。
+
+```bash
+# 单文件估时
+/dg-learntime-estimate README.md
+
+# 文件夹估时（递归累加每个文件）
+/dg-learntime-estimate tutorials/
+
+# 视频估时（URL 自动抓时长，合集自动展开所有 P）
+/dg-learntime-estimate https://bilibili.com/video/...
+
+# 视频估时（手报时长）
+/dg-learntime-estimate 这个视频 45 分钟
+
+# 书籍估时（书名 + 页数 + 类型）
+/dg-learntime-estimate DDIA 400 页 技术书
+
+# 自然语言也行
+估时一下这份资料要学多久
+学完 tutorials/ 要多久
+
+# 输出示例（顶部摘要 + 分段表 + 备注）：
+# > 类型：文件夹（4 个文件） · 基础合计 7 时 24 分
+# > **零基础 13 时 19 分 / 有基础 7 时 24 分 / 熟练 4 时 26 分**
+```
+
 ## 安装
 
 把本仓库作为 marketplace 添加到 Claude Code：

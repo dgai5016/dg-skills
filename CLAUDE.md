@@ -91,9 +91,10 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 
 | Skill | 版本 | 职责 |
 |-------|------|------|
-| `dg-git-push` | 2.7.2 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
-| `dg-how-to-learn` | 2.7.2 | 输入一个学习资料文件夹 → 生成学习指南（3 段：嵌套列表资料清单 + 主题概述 + 文件维度学习路径）。学习路径直接回答「先学哪几个文件、后学哪几个、最后学哪几个」，每个文件含「讲什么（含体系位置）+ 怎么学」。派 subagent 并行处理文件夹内每个文件。产物整合到 `dg-how-to-learn/{name}/`（AI 推荐目录名 + 用户选/自定义）。当前**只支持文件夹输入**、**不生成题库/测试**（未来版本再加）。可选 `--obsidian` 转义 `<` 防 Obsidian 解析扰乱 |
-| `dg-douban-book` | 2.7.2 | 输入书名（可选作者）→ Playwright 抓豆瓣搜索 → **直接返豆瓣算法 top 1 单条结果**（书名 / 作者 / 出版社 / 出版年 / 评分 + 评分人数 / 豆瓣链接）。**主书名匹配判断精确/模糊**（按冒号切主书名，兼容「主书名相同 + 副标题不同」如「如何共读一本书」↔「如何共读一本书 : 高效引导社群学习」）；模糊时首句明确「豆瓣未收录」+ 给算法 top 1。**v2.0.1 起输出极简**（删装饰/排查建议、URL 改裸文字）。豆瓣搜索是 JS 动态渲染，所以用 Node.js + Playwright；首次跑自动 `npm install` 装 playwright（约 200MB）。**v2.0.0 起只返 Top 1**（v1.x 是 Top 3-5 候选列表）、**不抓书评/详情页**、**仅图书**（不含电影/音乐）。**v2.7.2 起 PoW 自动绕过 + cookie 持久化**（`/tmp/douban-state.json`），触发反爬时自动点击 `#sub` 按钮通过挑战页 |
+| `dg-git-push` | 2.8.1 | 分析 git 改动 → 生成中英 Conventional Commits message → 报告（目标分支 + message + 文件 + 分析）→ 确认后 add + commit + push 一条龙 |
+| `dg-how-to-learn` | 2.8.1 | 输入一个学习资料文件夹 → 生成学习指南（3 段：嵌套列表资料清单 + 主题概述 + 文件维度学习路径）。学习路径直接回答「先学哪几个文件、后学哪几个、最后学哪几个」，每个文件含「讲什么（含体系位置）+ 怎么学」。派 subagent 并行处理文件夹内每个文件。产物整合到 `dg-how-to-learn/{name}/`（AI 推荐目录名 + 用户选/自定义）。当前**只支持文件夹输入**、**不生成题库/测试**（未来版本再加）。可选 `--obsidian` 转义 `<` 防 Obsidian 解析扰乱 |
+| `dg-douban-book` | 2.8.1 | 输入书名（可选作者）→ Playwright 抓豆瓣搜索 → **直接返豆瓣算法 top 1 单条结果**（书名 / 作者 / 出版社 / 出版年 / 评分 + 评分人数 / 豆瓣链接）。**主书名匹配判断精确/模糊**（按冒号切主书名，兼容「主书名相同 + 副标题不同」如「如何共读一本书」↔「如何共读一本书 : 高效引导社群学习」）；模糊时首句明确「豆瓣未收录」+ 给算法 top 1。**v2.0.1 起输出极简**（删装饰/排查建议、URL 改裸文字）。豆瓣搜索是 JS 动态渲染，所以用 Node.js + Playwright；首次跑自动 `npm install` 装 playwright（约 200MB）。**v2.0.0 起只返 Top 1**（v1.x 是 Top 3-5 候选列表）、**不抓书评/详情页**、**仅图书**（不含电影/音乐）。**v2.7.2 起 PoW 自动绕过 + cookie 持久化**（`/tmp/douban-state.json`），触发反爬时自动点击 `#sub` 按钮通过挑战页 |
+| `dg-learntime-estimate` | 2.8.1 | 输入学习资源（单文件 / 文件夹 / 视频 URL 或时长 / 视频合集 / 书籍描述）→ **纯量化模型估时**（中文 350 字/分、英文 200 wpm、代码精读 50 行/时、技术书 3 分/页、**视频时长直接作基础值**）→ **同时输出三水平估时**（零基础 ×1.8 / 有基础 ×1.0 / 熟练 ×0.6），用户自己认领对应数字（不让用户预先选水平）。资料内在难度（数学密集 / 跨领域 / 前沿论文 ×1.3）由 Claude 在算基础值时调整（**仅文本/PDF/书模式，视频模式 v2.8.1 起不再应用**）。文件夹 / 合集简单累加，**不引入疲劳衰减**。视频 URL 通过 yt-dlp 自动抓时长 + **自动展开合集估所有 P**（首次 pip install ~50MB），**抓不到直接报错退出不反问手报**。**不保存输出文件、不联动 dg-douban-book、不做个人速度校准**。时间格式统一「X 时 Y 分」（< 60 分只显示分，整小时只显示时） |
 
 ## 通用 vs 专属的判断示例
 
@@ -110,3 +111,4 @@ ln -s ~/dg-skills ~/.claude/plugins/marketplaces/dg-skills
 - **通用原则**：任何带 `scripts/` 的 skill，先用 `bash scripts/<script>.sh <args>` 独立验证脚本工作正常，再让 Claude 调用整个 skill
 - **dg-git-push**：用 `collect-status.sh <path>` 在目标仓库验证状态采集——BRANCH（含 ahead/behind）/ STATUS / DIFFSTAT / COMMIT-CONTEXT 四段是否完整、untracked 是否被列出、无 remote / 无 upstream 等边界是否正确标记 `(none)` / `(n/a)`
 - **dg-douban-book**：先在 skill/scripts 目录跑 `npm install`（首次），再用 `node scripts/douban-search.js --title=三体` 独立验证 JSON 输出。重点看：① selector 是否还有效（豆瓣改版会让 `.item-root` 失效）；② status 字段是否正确（ok/empty/blocked/error）；③ meta 行解析（作者/出版社/年份）是否合理。豆瓣 selector 易变，调脚本时优先调 `page.$$eval` 的子 selector 候选列表
+- **dg-learntime-estimate**：本 skill **无 scripts/**，主要靠手动跑 slash command + 检查系数应用。重点看：① 4 种输入的分叉判定是否准确（文件夹 > 单文件 > 视频 URL > 视频手报 > 书籍）；② 三水平估时是否都列出且倍率正确（零基础 ×1.8 / 有基础 ×1.0 / 熟练 ×0.6）；③ 时间格式是否符合「< 60 分只显示分，整小时只显示时，否则 X 时 Y 分」；④ 视频 URL 抓取：`yt-dlp --print "%(title)s|%(duration)s" <URL>`（不带 `--no-playlist`）应自动展开合集所有 P；完全失败应直接报错（**不反问手报**），部分 P 失败应跳过 + 标注；⑤ 视频模式不再应用视频倍率和内在难度（v2.8.1 简化）；⑥ 文件夹 / 合集简单累加（无疲劳衰减）。详细系数表见 `skills/dg-learntime-estimate/references/coefficient-model.md`

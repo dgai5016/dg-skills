@@ -1,7 +1,7 @@
 ---
 name: dg-douban-book
 description: Searches Douban Books (book.douban.com) for a given title (optionally with author) and returns Douban's algorithmic Top 1 result directly (title / author / publisher / year / rating / rating-count / Douban URL) — no candidate list. Trusts Douban's search ranking (no script-side score reranking). Distinguishes exact matches from fuzzy ones via main-title extraction (handles "query = main title, result = main title : subtitle" cases — e.g. query "如何共读一本书" matches result "如何共读一本书 : 高效引导社群学习" because the main titles are equal). When Douban's top 1 is a fuzzy match (different main title, e.g. 共读 vs 阅读), explicitly reports "豆瓣未收录" and presents the top 1 as "豆瓣算法返回的最相关结果" with troubleshooting hints. Use when the user says "/dg-douban-book", "/douban-book", "豆瓣搜书", "豆瓣找书", "找下这本书在豆瓣的评分", "这本书豆瓣几分", or wants book metadata from Douban. Uses Playwright (Node.js) because Douban's search results are client-side rendered (curl/WebFetch cannot get them). Auto-installs playwright on first run. Auto-bypasses Douban's PoW anti-bot challenges (clicks the `#sub` proof-of-work button and waits for the front-end JS to compute SHA-512) and persists cookies to `/tmp/douban-state.json` to lower the chance of triggering rate limits on subsequent calls. Does NOT return a Top 3-5 candidate list (only Top 1), does NOT fetch reviews/short-comments, does NOT cover movies/music, does NOT cache results.
-version: 2.7.2
+version: 2.8.1
 metadata:
   openclaw:
     homepage: https://github.com/dgai5016/dg-skills#dg-douban-book
